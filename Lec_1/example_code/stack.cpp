@@ -1,7 +1,9 @@
 #include <iostream>
-#include <string>
-
 using namespace std;
+
+// --------- 用模板类实现简单的栈 -----------
+// 实现栈结构主要由两部分: 数组 + 循环
+//  核心就是管理好数组的存取, 以及防止内存泄露
 template<class T>
 class Stack
 {
@@ -78,29 +80,21 @@ void Stack<T>::show()
 
 int main(void)
 {
-    string str;
-    int i, len;
-    char temp;
+    Stack<char> myStack(512);
+    // 入栈
+    myStack.push('a');
+    myStack.push('b');
+    myStack.push('c');
 
-    printf("Please enter a calculate expression: \n");
-    getline(cin, str);
+    // 打印当前栈内容(元素仍保留在栈内)
+    myStack.show();
+    cout << "-----------" << endl;
 
-    len = str.size();
-    Stack<char> myStack(len);
-    for (i = 0; i < len; i++){
-        if (str[i] == '('){
-            continue;
-        }
-        else if (str[i] >= '0' && str[i] <= '9'){
-            cout << str[i];
-        }
-        else if(str[i] == '+' || str[i] == '-' || str[i] == '*'){
-            myStack.push(str[i]);
-        }
-        else if(str[i] == ')'){
-            myStack.pop(temp);
-            cout << temp;
-        }
+    // 出栈
+    char temp = ' ';
+    while(!myStack.isEmpty()){
+        myStack.pop(temp);
+        cout << temp;
     }
     cout << endl;
     return 0;

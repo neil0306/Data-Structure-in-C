@@ -79,5 +79,50 @@ void insert_node(int pos, char elem)    // pos 为插入新节点的位置, elem
             tail = p;
         }
     }
-
 } 
+
+void delete_node(int pos)
+{
+    /*
+    删除节点:
+        与 "插入节点" 一样, 删除节点也需要 "前趋点" pre.
+        如果删除的**是头结点**
+            1. 把 pre 设置为 head 
+            2. 将 head 存放的地址更新为 原来head的指针域里存放的地址 (head直接挪到下一个位置)
+            3. 释放被删除的节点空间, 防止内存泄露
+        如果删除的**不是头结点**
+            1. 遍历链表, 找到前趋点(index 为 pos - 1 的位置)
+            2. 将准备删除的节点指针 p 赋值为 pre->next (也就是 p 指向了 pos 位置)
+            3. 将 pre指针 指向 pos 的下一个节点 (此时链表将绕开 pos 节点)
+            4. 检查 pos 指向的节点是否为 "尾结点", 特征是 p->next 为 NULL
+            5. 释放被删除的节点空间, 防止内存泄露
+    */
+    struct node * pre = head;       // 用于遍历链表, 找到 index 为 pos - 1 的位置 (前趋点), 遍历时从第一个节点开始, 故初始化为 head
+    struct node * p;                // 指向待删除节点的指针
+    int i;
+
+    if(0 == pos){                   // 删除的是头结点
+        pre = head;                 // 虽然前面定义 pre 的时候已经把 head 里面存放的 **地址拷贝到 pre**, 但是为了思路清晰, 这里也可以再写一次.
+        head = head->next;          // head 里存放的地址直接替换为下一个节点的起始地址 (注意此时并不会影响到 pre)
+        free(pre);                  // pre 初始化的时候已经是head
+    }
+    else{
+        // 遍历链表, 找到 pos 的前一个节点(前趋点), 跳出循环时, i 的位置就是前趋点的位置
+        while(i < pos - 1){
+            pre = pre->next;
+            i++;
+        }
+        p = pre->next;                  // 确定待删除节点
+
+        // 更新 pre节点的 next指针 
+        pre->next = p->next;            // 将 pre指针 指向 pos 的下一个节点
+
+        // 检查删除的是不是尾结点
+        if(p->next == NULL){            // 如果删除的是尾结点
+            tail = pre;                 // 坐实 当前删除的节点是尾结点, 此时 尾结点 就变成前一个节点.
+        }
+
+        // 释放被删除的节点, 防止内存泄露
+        free(p);                        // 释放被删除的节点
+    }
+}

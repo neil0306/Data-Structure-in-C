@@ -4,6 +4,7 @@
         "iostream": "cpp",
         "string.h": "c",
         "stdlib.h": "c",
-        "linklist.h": "c"
+        "linklist.h": "c",
+        "stdio.h": "c"
     }
 }

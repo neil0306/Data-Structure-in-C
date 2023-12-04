@@ -9,6 +9,10 @@ struct node
     struct node * next;     // 下一个节点的指针类型是 "struct node"
 };
 
+void create_linklist(unsigned char elem);
+void insert_node(int pos, char elem);
+void delete_node(int pos);
+void print_linklist();
+int search(unsigned char elem);
 
-
-#endif //!__LINKLIST_H__
+#endif

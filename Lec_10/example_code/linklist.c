@@ -75,7 +75,7 @@ void insert_node(int pos, char elem)    // pos 为插入新节点的位置, elem
         pre->next = p;              // 将pre的next指针指向新插入的节点
 
         // 检查插入的节点是否为尾节点, 如果是, 则需要更新 tail指针, 坐实新增节点在链表的地位
-        if (p->next ==NULL){        // 假如 pre 刚好是末尾节点, 则新插入的节点的 next指针 就会恰好为 NULL
+        if (p->next == NULL){        // 假如 pre 刚好是末尾节点, 则新插入的节点的 next指针 就会恰好为 NULL
             tail = p;
         }
     }
@@ -125,4 +125,25 @@ void delete_node(int pos)
         // 释放被删除的节点, 防止内存泄露
         free(p);                        // 释放被删除的节点
     }
+}
+
+void print_linklist()
+{
+    // 遍历并打印节点内容, 注意只能从 head 开始遍历
+    struct node * p;
+    for (p = head; p != NULL; p = p->next){
+        printf("%c", p->elem);
+    }
+    printf("\n"); 
+}
+
+int search(unsigned char elem)
+{
+    struct node *p;
+    for (p = head; p != NULL; p = p->next){
+        if (p->elem == elem){
+            return 1;
+        }
+    }
+    return 0;
 }

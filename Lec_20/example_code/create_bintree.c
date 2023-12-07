@@ -26,7 +26,7 @@ struct BinTree_node * create_bintree(void)
     while((tree->elem = getchar()) == '\n');        // 当读取的字符不是回车时, 就会跳出while, 这样做可以防止读到缓冲区里可能在上一次输入残存的回车
 
     // 左子树
-    printf("Do you want to l_tree for %c, (Y/N)? \n", tree->elem);
+    printf("Do you want to create l_tree for %c, (Y/N)? \n", tree->elem);
     while((flag = getchar()) == '\n');              // 防止读到回车
     if(flag == 'Y'){
         tree->ltree = create_bintree();

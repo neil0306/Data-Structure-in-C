@@ -5,6 +5,7 @@
         "string.h": "c",
         "stdlib.h": "c",
         "linklist.h": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "__config": "cpp"
     }
 }

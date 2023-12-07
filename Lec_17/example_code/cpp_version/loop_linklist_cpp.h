@@ -33,22 +33,22 @@ class linklist
         linklist() : head(NULL), tail(NULL), len(0){}
         ~linklist()
         {
-            struct node * p;
-            // 直接从头节点开始删
-            do{
-                tail->next = head->next;
-                p = head;
-                head = head->next;
-                // cout << "deleting: " << p->elem << endl;
-                delete(p);
-                len--;
-            }while(head->next != tail);
-            delete head;    // 别忘了还有个头节点没删(其实剩下的那个也是尾节点)
-            len --;
-            delete tail;
-            len --;
-            // cout << "There are " << len << " nodes left in your linklist." << endl;
-            // cout << "Finish deconstruction!" << endl;
+            // 从头结点开始删
+            struct node * pre = head;      // 待删除节点 的 前一个节点
+
+            if( pre == nullptr || nullptr == pre->next){
+                // 空链表
+                return;
+            }
+            else{
+                for(int i = 0; i < len; i++){
+                    pre = head;        // 从头结点开始删
+                    head = head->next;
+                    delete pre;
+                    tail->next = head;
+                }
+            }
+            len = 0;
         }
 };
 

@@ -6,6 +6,8 @@
         "stdlib.h": "c",
         "linklist.h": "c",
         "stdio.h": "c",
-        "__config": "cpp"
+        "__config": "cpp",
+        "binary_tree.h": "c",
+        "queue.h": "c"
     }
 }

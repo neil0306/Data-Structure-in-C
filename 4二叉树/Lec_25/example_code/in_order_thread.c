@@ -19,8 +19,9 @@ struct BinTree_node * Create_Bintree_pre();     // 创建二叉树(补空法-前
 void pre_order(struct BinTree_node * tree);     // 前序遍历
 void in_order(struct BinTree_node * tree);      // 中序遍历
 void pos_order(struct BinTree_node * tree);     // 后序遍历
-void In_order_thread(struct BinTree_node *tree);        // 完成中序线索化的递归过程
-void Create_InOrder_Thread(struct BinTree_node * T);   // 完成整个中序线索化
+void In_order_thread(struct BinTree_node *tree);            // 完成中序线索化的递归过程
+void Create_InOrder_Thread(struct BinTree_node * T);        // 完成整个中序线索化
+void Traverse_InOrder_Thread(struct BinTree_node * tree);   // 遍历中序线索化二叉树
 
 int main(void)
 {
@@ -35,9 +36,13 @@ int main(void)
     printf("\n");
 
     printf("-------------\n");
-    printf("in-order thread: ");
+    printf("creating in-order thread.... ");
     Create_InOrder_Thread(myTree);
     printf("\n");
+
+    printf("-------------\n");
+    printf("Traverse InOrder Thread tree: \n");
+    Traverse_InOrder_Thread(myTree);
 
     return 0;
 }
@@ -163,4 +168,26 @@ void Create_InOrder_Thread(struct BinTree_node * T)
         pre->rtree = NULL;          // 当走完中序线索化之后, pre指向的节点会停在中序遍历的最后一个节点, 此时这个节点的右子树应设置为NULL
         pre->rflag = 1;
     }
+}
+
+void Traverse_InOrder_Thread(struct BinTree_node * tree)
+{
+    while(tree != NULL){
+        // step 1: 先找到二叉树的 "最左下节点"
+        while(tree->lflag == 0){
+            tree = tree->ltree;
+        }
+        printf("%c ", tree->elem);
+
+        // step 2: 然后找到第一个节点的后继节点
+        // case1: 这个节点没有右子树 ==> 直接把这个右子树的数据输出即可
+        while((tree->rflag == 1) && (tree->rtree != NULL)){ // tree 没有右子树(flag为1), 此时它的 rtree 指针要么指向NULL(二叉树末尾), 要么指向后继节点
+            tree = tree->rtree;
+            printf("%c ", tree->elem);
+        }
+        
+        // case2: 这个节点有右子树 ==> 把这棵右子树进行中序遍历, 中序遍历得到的第一个节点就是后继节点(右子树的 "最左下节点" ==> 又回到了第一步)
+        tree = tree->rtree;         // 当前节点有右子树, 所以当前节点并没有直接连接着它的后继节点, 所以这里需要更新一下遍历的节点位置, 对于这个case, 输出后继点的任务是交给 step1 来完成的
+    }
+    printf("\n");
 }

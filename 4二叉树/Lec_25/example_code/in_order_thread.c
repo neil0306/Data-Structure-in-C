@@ -22,13 +22,20 @@ void pos_order(struct BinTree_node * tree);     // 后序遍历
 void In_order_thread(struct BinTree_node *tree);            // 完成中序线索化的递归过程
 void Create_InOrder_Thread(struct BinTree_node * T);        // 完成整个中序线索化
 void Traverse_InOrder_Thread(struct BinTree_node * tree);   // 遍历中序线索化二叉树
+struct BinTree_node* Search_InOrder_Thread(struct BinTree_node * tree, char ch);
+struct BinTree_node * PreNode_InOrder_Thread(const struct BinTree_node * node);      // 加个const, 防止node指针被修改;
+struct BinTree_node * SuccNode_InOrder_Thread(const struct BinTree_node * node);      // 加个const, 防止node指针被修改
+
 
 int main(void)
 {
-    // struct BinTree_node * myTree =  create_bintree();
+
+    struct BinTree_node * myTree;
+    char ch;
+    struct BinTree_node *node, *precursor, *succeed;
 
     printf("Please input a pre-order binary tree(with fill blank #)\n");
-    struct BinTree_node * myTree =  Create_Bintree_pre();
+    myTree =  Create_Bintree_pre();
 
     printf("-------------\n");
     printf("pre-order: ");
@@ -43,6 +50,28 @@ int main(void)
     printf("-------------\n");
     printf("Traverse InOrder Thread tree: \n");
     Traverse_InOrder_Thread(myTree);
+
+    printf("-------------\n");
+    printf("Please enter the node that you want to find it's pre & succ node:\n");
+    while((ch = getchar()) == '\n');        // 一定要记得干掉之前输入的换行
+    node = Search_InOrder_Thread(myTree, ch);
+
+    printf("-------------\n");
+    precursor = PreNode_InOrder_Thread(node);       // 找出它的前趋点
+    if(precursor == NULL){
+        printf("node %c has no precusor node\n", node->elem);
+    }
+    else{
+        printf("Precusor node = %c\n", precursor->elem);
+    }
+
+    succeed = SuccNode_InOrder_Thread(node);        // 找出后继节点
+    if(succeed == NULL){
+        printf("node %c has no succeed node\n", node->elem);
+    }
+    else{
+        printf("Succeed node = %c\n", succeed->elem);
+    }
 
     return 0;
 }
@@ -190,4 +219,61 @@ void Traverse_InOrder_Thread(struct BinTree_node * tree)
         tree = tree->rtree;         // 当前节点有右子树, 所以当前节点并没有直接连接着它的后继节点, 所以这里需要更新一下遍历的节点位置, 对于这个case, 输出后继点的任务是交给 step1 来完成的
     }
     printf("\n");
+}
+
+struct BinTree_node* Search_InOrder_Thread(struct BinTree_node * tree, char ch)
+{
+    while(tree != NULL){
+        // step 1: 先找到二叉树的 "最左下节点" (其实就是前趋点)
+        while(tree->lflag == 0){
+            tree = tree->ltree;
+        }
+
+        if(tree->elem == ch){ // 如果前趋点是目标节点, 就返回
+            return tree;
+        }
+
+        // step 2: 然后找到第一个节点的后继节点
+        // case1: 这个节点没有右子树 ==> 直接把这个右子树的数据输出即可
+        while((tree->rflag == 1) && (tree->rtree != NULL)){ // tree 没有右子树(flag为1), 此时它的 rtree 指针要么指向NULL(二叉树末尾), 要么指向后继节点
+            tree = tree->rtree;
+            if(tree->elem == ch){  // 如果后继点是目标节点, 就返回
+                return tree;
+            }
+        }
+        
+        // case2: 这个节点有右子树 ==> 把这棵右子树进行中序遍历, 中序遍历得到的第一个节点就是后继节点(右子树的 "最左下节点" ==> 又回到了第一步)
+        tree = tree->rtree;         // 当前节点有右子树, 所以当前节点并没有直接连接着它的后继节点, 所以这里需要更新一下遍历的节点位置, 对于这个case, 判断目标节点的任务是交给 step1 来完成的
+    }
+}
+
+struct BinTree_node * PreNode_InOrder_Thread(const struct BinTree_node * node)      // 加个const, 防止node指针被修改
+{
+    struct BinTree_node *nd;
+    if(node->lflag == 1){       // 这个节点没有左子树, 此时它的 ltree 指向的就是前趋点
+        return node->ltree;
+    }
+    else{
+        // 如果这个节点有左子树, 则前趋点是"它左子树中最右下的节点"
+        nd = node->ltree;
+        while(nd->rflag == 0){    // 找最右下节点
+            nd = nd->rtree;
+        }
+        return nd;                // 此时这个node就是"最右下节点"
+    }
+}
+
+struct BinTree_node * SuccNode_InOrder_Thread(const struct BinTree_node * node)
+{
+    struct BinTree_node *nd;
+    if(node->rflag == 1){
+        return node->rtree;
+    }
+    else{
+        nd = node->rtree;
+        while(nd->lflag == 0){  // 如果右子树, 则后继点为右子树的 "最左下节点"
+            nd = nd->ltree;
+        }
+        return nd;
+    }
 }

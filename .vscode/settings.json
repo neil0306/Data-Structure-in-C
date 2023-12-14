@@ -8,6 +8,7 @@
         "stdio.h": "c",
         "__config": "cpp",
         "binary_tree.h": "c",
-        "queue.h": "c"
+        "queue.h": "c",
+        "__node_handle": "c"
     }
 }

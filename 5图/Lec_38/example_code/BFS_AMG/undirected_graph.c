@@ -115,22 +115,25 @@ void BFS_AMG(struct AMG_Graph * graph)
     int visited[MAX] = {0};             // 辅助数组, 标记当前节点是否被访问过: 0未访问, 1已访问
     int u;                              // 出队列的节点编号
     int i;                              // 控制循环的变量i
+    int j;
 
-    printf("%c ", graph->Vex[0]);       // 图的起始节点
-    visited[0] = 1;                     // 标记起点已访问
+    for(j = 0; j < graph->vex_num; j++){
+        if(visited[j] == 0){
+            printf("%c ", graph->Vex[j]);       // 图的起始节点
+            visited[j] = 1;                     // 标记起点已访问
+            enqueue(j);                         // 将起点入队列
 
-    enqueue(0);                         // 将起点入队列
-
-    while(!isEmpty()){
-        u = dequeue();                          // 将队列第一个元素出队
-        for(i = 0; i < graph->vex_num; i++){    // 遍历邻接矩阵中的第u行(其实等价于查询一次所有顶点), 找到该元素的"未被访问的邻接点", 并将他们入队
-            if((graph->Edge[u][i] == 1) && (visited[i] == 0)){  // i是邻接点, 并且i没有被访问过时
-                visited[i] = 1;                 // 标记为已访问
-                enqueue(i);                     // 将该邻接点入队列
-                printf("%c ", graph->Vex[i]);   // 输出当前节点
+            while(!isEmpty()){
+                u = dequeue();                          // 将队列第一个元素出队
+                for(i = 0; i < graph->vex_num; i++){    // 遍历邻接矩阵中的第u行(其实等价于查询一次所有顶点), 找到该元素的"未被访问的邻接点", 并将他们入队
+                    if((graph->Edge[u][i] == 1) && (visited[i] == 0)){  // i是邻接点, 并且i没有被访问过时
+                        visited[i] = 1;                 // 标记为已访问
+                        enqueue(i);                     // 将该邻接点入队列
+                        printf("%c ", graph->Vex[i]);   // 输出当前节点
+                    }
+                }
             }
         }
     }
-
     printf("\n");
 }

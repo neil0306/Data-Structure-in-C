@@ -9,6 +9,7 @@
         "__config": "cpp",
         "binary_tree.h": "c",
         "queue.h": "c",
-        "__node_handle": "c"
+        "__node_handle": "c",
+        "queue": "c"
     }
 }

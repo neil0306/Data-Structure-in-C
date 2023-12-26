@@ -15,6 +15,7 @@ struct BSTree_node * create_BStree(unsigned int arr[], int n);
 struct BSTree_node * insert_bstree(struct BSTree_node *T, unsigned int elem);
 void in_order(struct BSTree_node *tree);                    // 中序遍历
 int search_bstree(struct BSTree_node *tree, unsigned int num);     // 在二叉搜索树进行搜索
+struct BSTree_node * delete_bstree(struct BSTree_node * tree, unsigned int num);        //删除二叉搜索树的某个节点
 
 // ------------- main -------------
 int main(void)
@@ -43,6 +44,13 @@ int main(void)
     printf("Please enter a number you want to insert to the BSTree: ");
     scanf("%d", &num);
     mytree = insert_bstree(mytree, num);
+    in_order(mytree);
+    printf("\n");
+
+    // 删除二叉搜索树中的某个节点
+    printf("Please enter a number you want to delete from the BSTree: ");
+    scanf("%d", &num);
+    mytree = delete_bstree(mytree, num);
     in_order(mytree);
     printf("\n");
 
@@ -128,4 +136,40 @@ int search_bstree(struct BSTree_node *tree, unsigned int num)
         }
     }
     return 0;
+}
+
+struct BSTree_node * delete_bstree(struct BSTree_node * T, unsigned int elem)
+{
+    if(T == NULL){
+        printf("Not exist %d node!\n", elem);
+        exit(0);
+    }
+
+    if(T->elem == elem){            // 处理要删除的节点
+        
+        if(T->rtree == NULL){       // 情况1: 被删除节点 "无右子树"
+            struct BSTree_node * temp = T;      // 临时存一下当前要删除的节点
+            T = T->ltree;                       // 绕开待删除节点(相当于用左子树顶替了要删除的那个节点), 此时T的后继点仍然指向着T, 所以只需要替换T位置的节点地址就可以了
+            free(temp);                         // 此时可以安全地释放掉 temp节点 (欲删除节点)
+        }
+        else{                       // 情况2: 被删除的节点 "有右子树", 删除方法是 "找出右子树的最左侧节点, 再将这个最左侧节点的值赋给T, 然后递归调用本函数来删除重复的节点"
+            struct BSTree_node *temp = T->rtree;    // 遍历节点使用的指针, 此时需要找右子树的最左侧节点, 故从T的右子树开始找
+            while(temp->ltree != NULL){
+                temp = temp->ltree;                 // 如果还有左子树, 则继续更新
+            }
+
+            T->elem = temp->elem;                   // 右子树最左侧节点的值赋值给要删除的元素(覆盖掉之后, 目标元素就从二叉树中"消失"了, 且此时出现了重复节点)
+
+            // 在T的右子树中删除重复的节点(注: 其实这个分支只会做元素值的覆盖, 真正删除节点的任务会交给上面的if分支)
+            T->rtree = delete_bstree(T->rtree, T->elem);        // 注意是从 T的右子树 开始遍历, 防止删错
+        }
+    }
+    else if(T->elem > elem){
+        T->ltree = delete_bstree(T->ltree, elem);        // 去左子树中寻找&删除删除目标节点, 然后更新左子树
+    }
+    else{
+        T->rtree = delete_bstree(T->rtree, elem);        // 去右子树中寻找&删除删除目标节点, 然后更新右子树
+    }
+
+    return T;
 }

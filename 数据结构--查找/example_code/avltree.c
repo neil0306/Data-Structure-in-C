@@ -15,7 +15,10 @@ struct AVLTree_node * create_avltree(unsigned int arr[], int n);
 struct AVLTree_node * insert_avltree(struct AVLTree_node *T, unsigned int elem);
 void in_order(struct AVLTree_node *tree);                    // 中序遍历
 int GetAVLTreeHeight(struct AVLTree_node * tree);            // 统计二叉树高度
-struct AVLTree_node * LL_Rotation(struct AVLTree_node *node);// LL型最小不平衡树 ==> 右旋
+struct AVLTree_node * LL_Rotation(struct AVLTree_node *node);// LL型最小不平衡子树 ==> 右旋
+struct AVLTree_node * RR_Rotation(struct AVLTree_node *node);// RR型最小不平衡子树 ==> 左旋
+struct AVLTree_node * LR_Rotation(struct AVLTree_node *node);// LR型最小不平衡子树 ==> 先左旋, 再右旋
+struct AVLTree_node * RL_Rotation(struct AVLTree_node *node);// RL型最小不平衡子树 ==> 先右旋, 再左旋
 
 // ------------- main -------------
 int main(void)
@@ -58,9 +61,13 @@ struct AVLTree_node * insert_avltree(struct AVLTree_node *T, unsigned int elem)
 
         // 判断插入节点之后是否平衡
         if(GetAVLTreeHeight(T->ltree) - GetAVLTreeHeight(T->rtree) > 1){
-            // 调整平衡 (LL型) ==> 右旋
-            if(elem < T->ltree->elem){
+            if(elem < T->ltree->elem){  // 通过失衡点到新增节点的第二路径节点大小来区分是LL型还是LR型
+                // 调整平衡 (LL型) ==> 右旋
                 T = LL_Rotation(T);
+            }
+            else{
+                // 调整平衡(LR型) ==> 先左旋, 再右旋
+                T = LR_Rotation(T);
             }
 
         }
@@ -70,7 +77,14 @@ struct AVLTree_node * insert_avltree(struct AVLTree_node *T, unsigned int elem)
 
         // 判断插入节点之后是否平衡
         if(GetAVLTreeHeight(T->rtree) - GetAVLTreeHeight(T->ltree) > 1){
-            
+            if(elem > T->rtree->elem){   // 通过失衡点到新增节点的第二路径节点大小来区分是RR型还是RL型
+                // 调整平衡 (RR型) ==> 左旋
+                T = RR_Rotation(T);
+            }
+            else{
+                // 调整平衡 (RL型) ==> 先右旋, 再左旋
+                T = RL_Rotation(T);
+            }
         }
     }
     else{                           // 此时 elem == T->elem
@@ -127,4 +141,42 @@ struct AVLTree_node * LL_Rotation(struct AVLTree_node *node)
     temp->ltree = node;
 
     return temp;
+}
+
+struct AVLTree_node * RR_Rotation(struct AVLTree_node *node)
+{
+    struct AVLTree_node * temp = NULL;
+
+    // step1: node的右子树赋给 temp
+    temp = node->rtree;
+
+    // step2: node的右子树的左子树 挪动到 node的左子树位置
+    node->rtree = node->rtree->ltree;
+
+    // step3: temp的左子树 设置为 node 节点
+    temp->ltree = node;
+
+    return temp;
+}
+
+struct AVLTree_node * LR_Rotation(struct AVLTree_node *node)
+{
+    // 左子树部分先进行 "左旋"(当做是RR型) ==> 转换为 LL型 
+    node->ltree = RR_Rotation(node->ltree);
+
+    // 再对当前最小不平衡子树进行 "右旋"
+    node = LL_Rotation(node);
+
+    return node;
+}
+
+struct AVLTree_node * RL_Rotation(struct AVLTree_node *node)
+{
+    // 右子树部分先进行 "右旋"(当做是LL型) ==> 转换为 RR型 
+    node->rtree = LL_Rotation(node->rtree);
+
+    // 再对当前最小不平衡子树进行 "左旋"
+    node = RR_Rotation(node);
+
+    return node;
 }

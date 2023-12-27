@@ -14,6 +14,8 @@ struct AVLTree_node
 struct AVLTree_node * create_avltree(unsigned int arr[], int n);
 struct AVLTree_node * insert_avltree(struct AVLTree_node *T, unsigned int elem);
 void in_order(struct AVLTree_node *tree);                    // 中序遍历
+int search_avltree(struct AVLTree_node *tree, unsigned int num);     // 在二叉搜索树进行搜索
+
 int GetAVLTreeHeight(struct AVLTree_node * tree);            // 统计二叉树高度
 struct AVLTree_node * LL_Rotation(struct AVLTree_node *node);// LL型最小不平衡子树 ==> 右旋
 struct AVLTree_node * RR_Rotation(struct AVLTree_node *node);// RR型最小不平衡子树 ==> 左旋
@@ -33,6 +35,33 @@ int main(void)
     in_order(mytree);
     printf("\n");
     
+
+    // 从二叉搜索树中查找指定元素
+    printf("Please enter a number you want to find in AVLtree: ");
+    scanf("%d", &num);
+    if (search_avltree(mytree, num)){
+        printf("Find %d in mytree.\n", num);
+    }
+    else{
+        printf("Cannot not find %d in mytree.\n", num);
+    }
+
+    // 往二叉搜索树中添加节点
+    printf("Please enter a number you want to insert to the AVLTree: ");
+    scanf("%d", &num);
+    mytree = insert_avltree(mytree, num);
+    in_order(mytree);
+    printf("\n");
+
+    printf("mytree->elem = %d\n", mytree->elem);  // 加入前面插入了100, 此时应该为22
+    printf("mytree->ltree->elem = %d\n", mytree->ltree->elem);
+    printf("mytree->rtree->elem = %d\n", mytree->rtree->elem);
+    printf("mytree->ltree->ltree->elem = %d\n", mytree->ltree->ltree->elem);
+    printf("mytree->rtree->rtree->elem = %d\n", mytree->rtree->rtree->elem);
+    printf("mytree->ltree->ltree->ltree->elem = %d\n", mytree->ltree->ltree->ltree->elem);  // 这个应该为9
+    printf("mytree->rtree->rtree->rtree->elem = %d\n", mytree->rtree->rtree->rtree->elem);  // 这个应该为100
+
+
     return 0;
 }
 
@@ -59,7 +88,7 @@ struct AVLTree_node * insert_avltree(struct AVLTree_node *T, unsigned int elem)
     else if(elem < T->elem){        // 假如传进来的不是空树, 则比较一下elem与当前(子树)根节点的大小, 从而确定把它放到左子树还是右子树位置
         T->ltree = insert_avltree(T->ltree, elem);      // 利用递归的思想: 此时 ltree 必然是空树, 会直接走上面的if分支
 
-        // 判断插入节点之后是否平衡
+        // 判断插入节点之后是否平衡(注意: 如果不平衡, 此时的T指针恰好指向失衡点)
         if(GetAVLTreeHeight(T->ltree) - GetAVLTreeHeight(T->rtree) > 1){
             if(elem < T->ltree->elem){  // 通过失衡点到新增节点的第二路径节点大小来区分是LL型还是LR型
                 // 调整平衡 (LL型) ==> 右旋
@@ -137,8 +166,8 @@ struct AVLTree_node * LL_Rotation(struct AVLTree_node *node)
     // step2: 将 node的左子树的右子树 挪动到 node的左子树位置(第一步已经备份过地址, 这里可以安全地覆盖)
     node->ltree = node->ltree->rtree;
 
-    // step3: 让 temp的左子树 设置为 node 节点
-    temp->ltree = node;
+    // step3: 让 temp的右子树 设置为 node 节点
+    temp->rtree = node;
 
     return temp;
 }
@@ -180,3 +209,26 @@ struct AVLTree_node * RL_Rotation(struct AVLTree_node *node)
 
     return node;
 }
+
+int search_avltree(struct AVLTree_node *tree, unsigned int num)
+{
+    struct AVLTree_node *p = tree;       // 指向当前遍历的节点
+
+    while(p != NULL){
+        if(num == p->elem){             // 找到想要的元素
+            return 1;
+        }
+        else if(num < p->elem){         // 目标位于左子树
+            p = p->ltree;               // p更新到左子树的根节点
+        }
+        else{
+            p = p->rtree;               // 目标位于右子树
+        }
+    }
+    return 0;
+}
+
+
+
+
+

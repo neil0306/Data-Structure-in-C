@@ -21,6 +21,7 @@ struct AVLTree_node * LL_Rotation(struct AVLTree_node *node);// LL型最小不�
 struct AVLTree_node * RR_Rotation(struct AVLTree_node *node);// RR型最小不平衡子树 ==> 左旋
 struct AVLTree_node * LR_Rotation(struct AVLTree_node *node);// LR型最小不平衡子树 ==> 先左旋, 再右旋
 struct AVLTree_node * RL_Rotation(struct AVLTree_node *node);// RL型最小不平衡子树 ==> 先右旋, 再左旋
+struct AVLTree_node * delete_avltree(struct AVLTree_node * T, unsigned int elem);
 
 // ------------- main -------------
 int main(void)
@@ -61,6 +62,18 @@ int main(void)
     printf("mytree->ltree->ltree->ltree->elem = %d\n", mytree->ltree->ltree->ltree->elem);  // 这个应该为9
     printf("mytree->rtree->rtree->rtree->elem = %d\n", mytree->rtree->rtree->rtree->elem);  // 这个应该为100
 
+
+    // 删除二叉搜索树中的某个节点
+    printf("Please enter a number you want to delete from the AVLTree: ");
+    scanf("%d", &num);
+    mytree = delete_avltree(mytree, num);
+    in_order(mytree);
+    printf("\n");
+
+    printf("mytree->elem = %d\n", mytree->elem);                    // 输出37
+    printf("mytree->ltree->elem = %d\n", mytree->ltree->elem);      // 输出11
+    printf("mytree->ltree->ltree->elem = %d\n", mytree->ltree->ltree->elem);  // 输出9
+    printf("mytree->ltree->rtree->elem = %d\n", mytree->ltree->rtree->elem);  // 输出33
 
     return 0;
 }
@@ -229,6 +242,74 @@ int search_avltree(struct AVLTree_node *tree, unsigned int num)
 }
 
 
+struct AVLTree_node * delete_avltree(struct AVLTree_node * T, unsigned int elem)
+{
+    if(T == NULL){
+        printf("Not exist %d node!\n", elem);
+        exit(0);
+    }
 
+    struct AVLTree_node *temp;
 
+    if(T->elem == elem){            // 处理要删除的节点
+        
+        if(T->rtree == NULL){       // 情况1: 被删除节点 "无右子树"
+            temp = T;               // 临时存一下当前要删除的节点
+            T = T->ltree;                       // 绕开待删除节点(相当于用左子树顶替了要删除的那个节点), 此时T的后继点仍然指向着T, 所以只需要替换T位置的节点地址就可以了
+            free(temp);                         // 此时可以安全地释放掉 temp节点 (欲删除节点)
+        }
+        else{                       // 情况2: 被删除的节点 "有右子树", 删除方法是 "找出右子树的最左侧节点, 再将这个最左侧节点的值赋给T, 然后递归调用本函数来删除重复的节点"
+            temp = T->rtree;        // 遍历节点使用的指针, 此时需要找右子树的最左侧节点, 故从T的右子树开始找
+            while(temp->ltree != NULL){
+                temp = temp->ltree;                 // 如果还有左子树, 则继续更新
+            }
+            T->elem = temp->elem;                   // 右子树最左侧节点的值赋值给要删除的元素(覆盖掉之后, 目标元素就从二叉树中"消失"了, 且此时出现了重复节点)
+
+            // 在T的右子树中删除重复的节点(注: 其实这个分支只会做元素值的覆盖, 真正删除节点的任务会交给上面的if分支)
+            T->rtree = delete_avltree(T->rtree, T->elem);        // 注意是从 T的右子树 开始遍历, 防止删错
+
+            // --------------- AVL tree 需新增删除节点后的处理 ----------------
+            // 检查高度, 判断当前删除节点之后是否不平衡, 不平衡的case有四种: LL, RR, LR, RL
+            if(GetAVLTreeHeight(T->ltree) - GetAVLTreeHeight(T->rtree) > 1){         // 右子树中有节点被删除, 则不平衡的情况只可能发生在左子树比右子树高
+                temp = T->ltree;        // temp指向当树的左子树, 用来判断不平衡的类型
+                if(GetAVLTreeHeight(temp->ltree) >= GetAVLTreeHeight(temp->rtree)){  // LL型
+                    T =  LL_Rotation(T);
+                }
+                else{
+                    T = LR_Rotation(T);
+                }
+            }
+        }
+    }
+    else if(T->elem > elem){
+        T->ltree = delete_avltree(T->ltree, elem);        // 去左子树中寻找&删除删除目标节点, 然后更新左子树
+
+        // --------------- AVL tree 需新增删除节点后的处理 ----------------
+        if(GetAVLTreeHeight(T->rtree) - GetAVLTreeHeight(T->ltree) > 1){                // 删了左子树的节点, 此时只右子树一定比左子树高这种可能性
+            temp = T->rtree;
+            if(GetAVLTreeHeight(temp->rtree) >= GetAVLTreeHeight(temp->ltree)){          // RR型
+                T = RR_Rotation(T);
+            }
+            else{
+                T = RL_Rotation(T);
+            }
+        }
+    }
+    else{
+        T->rtree = delete_avltree(T->rtree, elem);        // 去右子树中寻找&删除删除目标节点, 然后更新右子树
+        // --------------- AVL tree 需新增删除节点后的处理 ----------------
+        // 检查高度, 判断当前删除节点之后是否不平衡, 不平衡的case有四种: LL, RR, LR, RL
+        if(GetAVLTreeHeight(T->ltree) - GetAVLTreeHeight(T->rtree) > 1){         // 右子树中有节点被删除, 则不平衡的情况只可能发生在左子树比右子树高
+            temp = T->ltree;        // temp指向当树的左子树, 用来判断不平衡的类型
+            if(GetAVLTreeHeight(temp->ltree) >= GetAVLTreeHeight(temp->rtree)){  // LL型
+                T =  LL_Rotation(T);
+            }
+            else{
+                T = LR_Rotation(T);
+            }
+        }
+    }
+
+    return T;
+}
 

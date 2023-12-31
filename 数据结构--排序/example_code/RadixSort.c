@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define SIZE 15     // 假定待排序数字一共15个
-#define M 11        // 假定一共划分成11个桶
+#define SIZE 16     // 假定待排序数字一共16个
+#define M 10        // 假定一共划分成10个桶
 
 struct node
 {
@@ -10,15 +10,14 @@ struct node
     struct node * next;
 };
 
-void BucketSort(int array[], int n);
-void InsertBucket(struct node * Bucket[], unsigned int value);
-int ScoreSort(unsigned int value);
+void RadixSort(int array[], int n);
+int Search_Maxbit(int array[], int n);
+int Bitnumber(int x, int bit);
 void Show_Bucket(struct node * Bucket[], int m);
-
 
 int main(void)
 {
-    int scores[SIZE] = {66, 73, 51, 71, 85, 46, 82, 12, 73, 92, 79, 5, 70, 81, 88};
+    int scores[SIZE] = {66, 73, 51, 71, 85, 46, 82, 12, 73, 92, 79, 5, 70, 81, 88, 100};
 
     printf("Original array\t: ");
     for(int i = 0; i < SIZE; i++){
@@ -26,7 +25,7 @@ int main(void)
     }
     printf("\n");
 
-    BucketSort(scores, SIZE);
+    RadixSort(scores, SIZE);
 
     printf("After sort\t: ");
     for(int i = 0; i < SIZE; i++){
@@ -36,75 +35,91 @@ int main(void)
     return 0;
 }
 
-void BucketSort(int array[], int n)
+void RadixSort(int array[], int n)
 {
-    struct node * Bucket[M] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+    int maxbit;
 
-    // step1: 划分区间, 将元素放入区间(放入的过程中完成桶内排序)
-    for (int i = 0; i < n; i++){
-        InsertBucket(Bucket, array[i]);   // 往桶里放值 (链表中插入节点)
-    }
+    // 找出待排序数据的最大数值, 确定有多少位
+    maxbit = Search_Maxbit(array, n);
 
-    // Show_Bucket(Bucket, M);              // 打印一下桶里的内容
+    for (int k = 1; k <= maxbit; k++){
+        struct node * Bucket[M] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 
-    // step2: 按照桶的顺序, 重新放回原数组
-    for (int i = 0, j = 0; i < M; i++){
-        struct node * point = Bucket[i];
-        if(point == NULL){                // 空桶
-            continue;
-        }
-        else{
-            // 非空桶, 元素放回原数组
-            while(point != NULL){ 
-                array[j++] = point->elem;
-                point = point->next;
+        for(int i = 0; i < n; i++){
+            int index = Bitnumber(array[i], k);      // 1:个位  2:十位  3:百位
+            struct node * p = (struct node *)malloc(sizeof(struct node));
+
+            p->elem = array[i];
+            if(Bucket[index] == NULL){      // 空桶, 放在头
+                Bucket[index] = p;
+                p->next = NULL;
+            }
+            else{                           // 非空桶, 放末尾
+                struct node *point = Bucket[index];
+                struct node *pre = NULL;
+
+                // 找尾结点
+                while(point != NULL){
+                    pre = point;
+                    point = point->next;
+                }
+
+                // 插入尾部
+                pre->next = p;
+                p->next = point;        // point 此时其实就是NULL
             }
         }
-    }
-}
+        // Show_Bucket(Bucket, M);
 
-void InsertBucket(struct node * Bucket[], unsigned int value)
-{
-    int index; 
-    struct node * p = (struct node *)malloc(sizeof(struct node));   // 创建新节点
-
-    p->elem = value;
-    index = ScoreSort(value);          // 计算插入值将要放入的桶的序号 (含义上等同于哈希函数)
-    
-    /*
-        开始往桶里放元素, 放的时候就要把排序的工作完成.
-    
-            case1: 
-                如果桶里现在一个节点都没有, 或者已经有头节点, 但新来的节点p 比该头节点 小
-                    ==> 直接将新节点插入链表头   (链表头存放的是当前链表的最小值)
-                
-            case2:
-                如果链表已经有节点, 且新来的节点 p 大于 链表头结点
-                    ==> 找到比p大, 
-    */ 
-    if(Bucket[index] == NULL || Bucket[index]->elem > p->elem){
-        p->next = Bucket[index];
-        Bucket[index] = p;
-    }
-    else{                                                       // 通内有链表, 且新来的节点要大于链表头
-        struct node * pre = NULL;                               // 前趋点
-        struct node * point = Bucket[index];                    // 后继点  (满足 point->elem > p->elem 的第一个节点)
-
-        // 找前趋点和后继点
-        while(point != NULL && point->elem < p->elem){
-            pre = point;
-            point = point->next;
+        // 元素依次放回桶里
+        for (int i = 0, j = 0; i < M; i++){
+            struct node * point = Bucket[i];
+            if(point == NULL){                // 空桶
+                continue;
+            }
+            
+            // 非空桶, 元素放回原数组
+            while(point != NULL){ 
+                array[j] = point->elem;
+                point = point->next;
+                j++;
+            }
+            
         }
-
-        // 插入新节点
-        pre->next = p;
-        p->next = point;
+        // Show_Bucket(Bucket, M);
     }
 }
 
-int ScoreSort(unsigned int value)
+// 计算待排序数组一共有多少位
+int Search_Maxbit(int array[], int n)
 {
-    return value / 10;
+    int max = array[0];
+    int digits = 0;
+
+    // 找最大值
+    for (int i = 1; i < n; i++){
+        if(array[i] > max){
+            max = array[i];
+        }
+    }
+
+    // 确认有多少位
+    while(max != 0){
+        digits++;
+        max /= 10;
+    }
+
+    return digits;
+}
+
+// 计算当前待插入元素的 第bit位 是多少
+int Bitnumber(int x, int bit)
+{
+    int temp = 1;
+    for(int i = 1; i < bit; i++){
+        temp *= 10;
+    }
+    return (x / temp) % 10;
 }
 
 void Show_Bucket(struct node * Bucket[], int m)

@@ -29,8 +29,20 @@ int main(void)
 
 void HeapkSort(int array[], int n)
 {
+    // step1: 创建初始堆
     for(int i = (n-1)/2; i >=0; i--){
         Sink(array, i, n);          // 对每一个遍历的节点都调用下沉函数(只有满足条件的节点才会下沉)
+    }
+
+    // step2: 调整堆结构
+    while(n > 0){
+        // 交换: 堆顶元素 与 堆底元素 交换
+        Swap(&array[0], &array[n]);
+        // 将刚操作的元素锁定 (已排序不能再操作)
+        n--;
+        // 下沉: 此时的堆顶元素下沉
+        Sink(array, 0, n);
+
     }
 }
 
